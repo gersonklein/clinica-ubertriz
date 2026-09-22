@@ -93,7 +93,8 @@ aside.filters{display:flex;flex-direction:column;gap:18px;position:sticky;top:64
 .sym{color:var(--muted);font-size:14px;margin-top:3px}
 .ctx{font-size:12px;color:var(--muted);margin-top:6px;display:flex;flex-wrap:wrap;gap:4px 10px}
 .ctx .vul{color:var(--s3);font-weight:500}
-.ctx .heur-used{font-family:var(--mono);font-size:11px;color:var(--accent)}
+.case-heuristics{margin-top:7px;display:flex;flex-wrap:wrap;gap:4px}
+.case-heuristics .htag{font-size:10px}
 .meta{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
 .htag{font-family:var(--mono);font-size:11px;background:var(--accent-soft);color:var(--accent);padding:2px 7px;border-radius:4px;white-space:nowrap}
 .sev{display:inline-flex;gap:3px;align-items:center}
@@ -360,13 +361,7 @@ const SETS = window.HEUR;
 const P = window.PROBLEMAS.slice().sort((a, b) => a.id - b.id);
 const HX = {};                       // código → {set, n, d}
 SETS.forEach(s => s.itens.forEach(([code, n, d]) => HX[code] = { set: s.id, setName: s.n, n, d }));
-P.forEach(p => {
-  // Nielsen continua como uma lente válida, mas não é mais o diagnóstico-padrão.
-  // A maior parte dos casos parte de uma das outras violações já documentadas;
-  // uma em cada dez mantém Nielsen como lente principal para comparabilidade.
-  p.all = ["NI" + p.h, ...p.hx];
-  p.primary = p.id % 10 === 0 ? "NI" + p.h : p.hx[(p.id - 1) % p.hx.length];
-});
+P.forEach(p => { p.all = ["NI" + p.h, ...p.hx]; });
 const FAMS = [...new Set(Object.values(U).map(u => u[0]))];
 const fam = u => U[u][0];
 const famName = f => f.charAt(0) + f.slice(1).toLowerCase();
@@ -446,7 +441,7 @@ function procHTML(p) {
   const escTabs = ESCS.map(k => `<button type="button" data-esc="${k}" aria-selected="${k === p.e}">${k}${k === p.e ? " ★" : ""}</button>`).join("");
   return `<div class="proc" id="proc-${p.id}" hidden>
     <div class="step"><h4><span>1</span>Diagnóstico</h4>
-      <p class="muted">Diagnóstico principal: <strong>${esc(HX[p.primary].setName)} · ${p.primary} ${esc(HX[p.primary].n)}</strong>. Há violações em ${new Set(p.all.map(h => HX[h].set)).size} conjuntos:</p>
+      <p class="muted">Heurísticas violadas, agrupadas conforme cada autor/conjunto, em ${new Set(p.all.map(h => HX[h].set)).size} conjuntos:</p>
       <div class="hgroups">${groups}</div></div>
     <div class="step"><h4><span>2</span>Formulação do problema</h4>
       <p>${cd(p.pf)}Forma: <strong>${PF[p.pf][0]}</strong> <span class="muted">— ${PF[p.pf][1]}</span></p>
@@ -515,8 +510,8 @@ function render(keep) {
       <button class="row" aria-expanded="${isOpen}" data-id="${p.id}">
         <span class="num">${String(p.id).padStart(3, "0")}</span>
         <span><div class="ttl">${esc(p.t)}</div><div class="sym">${esc(p.sym)}</div>
-          <div class="ctx"><span>${DOM[p.dom]}</span>${p.vul ? `<span class="vul">Público: ${esc(p.vul)}</span>` : ""}<span class="heur-used" title="${esc(p.all.map(h => `${h} · ${HX[h].n}`).join(" | "))}">Heurísticas: ${p.all.join(" · ")}</span></div></span>
-        <span class="meta"><span class="htag">${p.primary}</span>${sevHTML(p.sev)}${isDone ? '<span class="check">✓ estudado</span>' : ""}</span>
+          <div class="ctx"><span>${DOM[p.dom]}</span>${p.vul ? `<span class="vul">Público: ${esc(p.vul)}</span>` : ""}</div><div class="case-heuristics">${p.all.map(h => `<span class="htag" title="${esc(HX[h].n)}">${esc(HX[h].setName)} · ${h}</span>`).join("")}</div></span>
+        <span class="meta">${sevHTML(p.sev)}${isDone ? '<span class="check">✓ estudado</span>' : ""}</span>
       </button>
       ${isOpen ? `<div class="detail">
         <div class="sol"><div class="k">Solução <span class="st">${ST[p.st].split(" — ")[0]}</span></div><p>${esc(p.sol)}</p></div>
@@ -580,10 +575,9 @@ $("#hm").onclick = e => { const td = e.target.closest("td[data-c]"); if (!td) re
 function buildBias() {
   const N = P.length, conta = a => a.reduce((m, k) => (m[k] = (m[k] || 0) + 1, m), {});
   const cC = conta(P.map(p => p.c)), cU = conta(P.map(p => p.u));
-  const cPrincipal = conta(P.map(p => HX[p.primary].set));
   const topC = Object.entries(cC).sort((a, b) => b[1] - a[1])[0], topU = Object.entries(cU).sort((a, b) => b[1] - a[1])[0];
   let piorH = 0, piorT = "";
-  for (const set of SETS) { const ps = P.filter(p => HX[p.primary].set === set.id); if (!ps.length) continue; const m = conta(ps.map(p => fam(p.u))); const [k, v] = Object.entries(m).sort((a, b) => b[1] - a[1])[0]; if (v / ps.length > piorH) { piorH = v / ps.length; piorT = `${set.n} → ${famName(k)}`; } }
+  for (const set of SETS) { const ps = P.filter(p => p.all.some(h => HX[h].set === set.id)); if (!ps.length) continue; const m = conta(ps.map(p => fam(p.u))); const [k, v] = Object.entries(m).sort((a, b) => b[1] - a[1])[0]; if (v / ps.length > piorH) { piorH = v / ps.length; piorT = `${set.n} → ${famName(k)}`; } }
   const cE = conta(P.map(p => p.e)), cS = conta(P.map(p => p.st)), cD = conta(P.map(p => p.dom));
   const pct = n => Math.round(1000 * n / N) / 10;
   const bar = (v, meta, max, inv) => `<div class="viz"><i style="width:${Math.min(100, 100 * v / max)}%"></i><em style="left:${100 * meta / max}%"></em></div>`;
@@ -592,7 +586,6 @@ function buildBias() {
   const stack = (obj, labels) => { const ks = Object.keys(labels); return `<div><div class="stack">${ks.map((k, i) => `<i style="width:${100 * (obj[k] || 0) / N}%;background:${cores[i % cores.length]}" title="${esc(labels[k])}: ${obj[k] || 0}"></i>`).join("")}</div><div class="legend">${ks.map((k, i) => `<span><i style="background:${cores[i % cores.length]}"></i>${esc(labels[k])} ${obj[k] || 0}</span>`).join("")}</div></div>`; };
   const vul = P.filter(p => p.vul).length, menos = P.filter(p => p.ide.menos.length).length, conf = P.filter(p => p.conf !== "alta").length;
   $("#bias").innerHTML = [
-    row(SETS.every(s => cPrincipal[s.id] > 0), "V0 · Diagnóstico principal distribuído pelos 12 conjuntos", stack(cPrincipal, Object.fromEntries(SETS.map(s => [s.id, s.n]))), `${Object.keys(cPrincipal).length}/12 conjuntos`),
     row(topC[1] <= N * .1, `V1 · Concentração de contradições (maior: ${topC[0]} ${C[topC[0]]})`, bar(pct(topC[1]), 10, 25), `${pct(topC[1])}% · meta ≤ 10%`),
     row(topU[1] <= N * .08, `V1 · Concentração de metaoperadores (maior: ${topU[0]} ${U[topU[0]][1]})`, bar(pct(topU[1]), 8, 25), `${pct(topU[1])}% · meta ≤ 8%`),
     row(piorH <= .4, `V2 · A heurística decide o operador? (pior: ${piorT})`, bar(100 * piorH, 40, 100), `${Math.round(100 * piorH)}% · meta ≤ 40%`),
@@ -615,8 +608,7 @@ let heurSet = "NI";
 function buildHeur() {
   $("#setoverview").innerHTML = SETS.map(s => {
     const usados = P.filter(p => p.all.some(h => HX[h].set === s.id)).length;
-    const principais = P.filter(p => HX[p.primary].set === s.id).length;
-    return `<button type="button" data-overview-set="${s.id}" title="Abrir ${esc(s.n)}"><b>${esc(s.n)}</b><span>${usados} casos · ${principais} principais</span></button>`;
+    return `<button type="button" data-overview-set="${s.id}" title="Abrir ${esc(s.n)}"><b>${esc(s.n)}</b><span>${usados} casos classificados</span></button>`;
   }).join("");
   $("#setbar").innerHTML = SETS.map(s => `<button class="chip" data-set="${s.id}" aria-pressed="${s.id === heurSet}">${esc(s.n)}</button>`).join("");
   const s = SETS.find(x => x.id === heurSet);

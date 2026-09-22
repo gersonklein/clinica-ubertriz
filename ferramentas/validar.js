@@ -70,18 +70,15 @@ meta(usadosC.size === 36, "V1 todas as 36 contradições", `faltam: ${Object.key
 meta(usadosU.size === 36, "V1 todos os 36 metaoperadores", `faltam: ${Object.keys(U).filter(k => !usadosU.has(k)).join(" ") || "—"}`);
 const famTodos = conta(P.flatMap(p => [p.u, ...p.ops].map(fam)));
 meta(Math.min(...Object.values(famTodos)) >= 40 && Object.keys(famTodos).length === 12, "V1 cada família ≥ 40 usos (principal + combinados)", top(famTodos, 12));
-// A lente principal é distribuída entre Nielsen e os outros conjuntos presentes
-// no diagnóstico; não se audita mais por lotes artificiais de Nielsen.
-const principal = p => p.id % 10 === 0 ? "NI" + p.h : p.hx[(p.id - 1) % p.hx.length];
-const cPrincipal = conta(P.map(p => principal(p).replace(/[0-9.]+$/, "")));
-meta(window.HEUR.every(s => cPrincipal[s.id] > 0), "V0 todos os 12 conjuntos aparecem como diagnóstico principal", JSON.stringify(cPrincipal));
+// Cada conjunto é auditado pelos casos em que uma de suas heurísticas foi
+// efetivamente violada — sem eleger uma lente principal artificial.
 let piorH = "", piorV = 0;
 for (const set of window.HEUR) {
-  const ps = P.filter(p => principal(p).startsWith(set.id)); if (!ps.length) continue;
+  const ps = P.filter(p => ["NI" + p.h, ...p.hx].some(h => h.startsWith(set.id))); if (!ps.length) continue;
   const m = conta(ps.map(p => fam(p.u))); const [k, v] = Object.entries(m).sort((a, b) => b[1] - a[1])[0];
   if (v / ps.length > piorV) { piorV = v / ps.length; piorH = `${set.id}→${k} ${v}/${ps.length}`; }
 }
-meta(piorV <= 0.40, "V2 conjunto heurístico principal não decide a família (≤ 40%)", "pior: " + piorH);
+meta(piorV <= 0.40, "V2 conjunto heurístico não decide a família (≤ 40%)", "pior: " + piorH);
 const cE = conta(P.map(p => p.e));
 meta((cE.macro || 0) >= N * 0.20 && (cE.micro || 0) <= N * 0.45, "V3 escalas: macro ≥ 20%, micro ≤ 45%", JSON.stringify(cE));
 meta(true, "V4 gravidade pela rubrica", JSON.stringify(conta(P.map(p => p.sev))));
