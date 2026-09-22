@@ -6,7 +6,7 @@ heurística violada → tensão → contradição (C01–C36) → metaoperador (
 
 ## Como usar
 
-Abra `clinica-ubertriz.html` em qualquer navegador — não há instalação nem servidor.
+Acesse pelo GitHub Pages: https://gersonklein.github.io/clinica-ubertriz/ — ou abra `index.html` em qualquer navegador; não há instalação nem servidor.
 
 - **Problemas** — catálogo com busca e filtros por heurística, escala, família de metaoperador e gravidade. A solução aparece ao abrir o problema; o raciocínio UBERTRIZ fica oculto até ser pedido.
 - **Heurísticas** — as 10 heurísticas com os metaoperadores mais usados em cada uma.
@@ -17,5 +17,5 @@ O progresso de estudo fica salvo no navegador de cada pessoa.
 
 ## Arquivos
 
-- `clinica-ubertriz.html` — a ferramenta (dados na lista `RAW`, um problema por linha).
+- `index.html` — a ferramenta (dados na lista `RAW`, um problema por linha).
 - `conversa_TRIZ_SUPERTRIZ_UBERTRIZ_completa.md` — texto-base da TRIZ, SUPERTRIZ e UBERTRIZ.

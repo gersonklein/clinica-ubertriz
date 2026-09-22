@@ -1,3 +1,9 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="500 problemas de usabilidade diagnosticados pelas heurísticas de Nielsen e resolvidos com a UBERTRIZ.">
 <title>Clínica Ubertriz de Usabilidade</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,6 +32,9 @@
   --s1:#7FB387; --s2:#D9B440; --s3:#EE8B45; --s4:#F0665A; --ok:#5CC08A; --bad:#F0665A;
 }
 *{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0}
 body{background:var(--ground);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.55;padding-inline:16px;padding-block:0 48px}
 .wrap{max-width:1180px;margin-inline:auto}
 h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.15}
@@ -155,6 +164,8 @@ summary{cursor:pointer;color:var(--accent);font-size:13.5px;font-weight:500}
 .empty{padding:40px 16px;text-align:center;color:var(--muted)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
+</head>
+<body>
 
 <div class="wrap">
   <header class="top">
@@ -993,3 +1004,6 @@ buildFilters(); buildMethod(); drawScore(); newQ(); updateProgress(); render();
 const hashTab = location.hash.replace("#","");
 showTab(["catalogo","heuristicas","metodo","treino"].includes(hashTab)?hashTab:store.get("ubz-tab","catalogo"));
 </script>
+
+</body>
+</html>
