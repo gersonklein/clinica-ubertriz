@@ -30,6 +30,7 @@ A solução aparece ao abrir o problema; o raciocínio completo fica oculto até
 
 | Meta | O que evita |
 |---|---|
+| Todos os 12 conjuntos aparecem como diagnóstico principal | Tratar Nielsen como lente-padrão |
 | Nenhuma contradição > 10% e nenhum metaoperador > 8%; todos os 36 de cada usados | Concentração em poucos códigos |
 | Nenhuma família > 40% dentro de uma heurística | A heurística decidir o operador |
 | Macro ≥ 20% e micro ≤ 45% | Resolver tudo só na tela |
@@ -48,6 +49,6 @@ As análises são propostas para estudo, não verdades: discuta, refute e melhor
 - `index.html` — a interface.
 - `dados/ubertriz.js` — catálogos da UBERTRIZ (C, U, I, P, L, escalas, domínios).
 - `dados/heuristicas.js` — os 12 conjuntos de heurísticas.
-- `dados/problemas-h01.js` … `h10.js` — os 500 problemas (50 por heurística de Nielsen).
+- `dados/problemas-h01.js` … `h10.js` — os 500 problemas. Os arquivos preservam os lotes de origem, mas a lente diagnóstica principal é distribuída entre os 12 conjuntos; Nielsen não é o padrão.
 - `ferramentas/validar.js` — validação e auditoria de vieses (Node.js).
 - `conversa_TRIZ_SUPERTRIZ_UBERTRIZ_completa.md` — texto-base da TRIZ, SUPERTRIZ e UBERTRIZ.

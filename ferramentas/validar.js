@@ -39,7 +39,7 @@ for (const p of P) {
   [p.freq, p.imp, p.pers].forEach(v => (v < 1 || v > 3) && e("freq/imp/pers fora de 1–3"));
   if (p.hx.length < 4 || p.hx.length > 9) e(`hx com ${p.hx.length} itens (esperado 4–9)`);
   p.hx.forEach(h => !HX.has(h) && e("heurística inexistente " + h));
-  if (p.hx.includes("NI" + p.h)) e("hx repete a heurística principal NI" + p.h);
+  if (p.hx.includes("NI" + p.h)) e("hx repete a heurística Nielsen de referência NI" + p.h);
   if (p.ops.length < 2 || p.ops.length > 3) e("ops deve ter 2–3 operadores");
   p.ops.forEach(u => (!U[u] || u === p.u) && e("op inválido ou repetido " + u));
   if (!C[p.c2.c]) e("c2 inválido " + p.c2.c);
@@ -70,13 +70,18 @@ meta(usadosC.size === 36, "V1 todas as 36 contradições", `faltam: ${Object.key
 meta(usadosU.size === 36, "V1 todos os 36 metaoperadores", `faltam: ${Object.keys(U).filter(k => !usadosU.has(k)).join(" ") || "—"}`);
 const famTodos = conta(P.flatMap(p => [p.u, ...p.ops].map(fam)));
 meta(Math.min(...Object.values(famTodos)) >= 40 && Object.keys(famTodos).length === 12, "V1 cada família ≥ 40 usos (principal + combinados)", top(famTodos, 12));
+// A lente principal é distribuída entre Nielsen e os outros conjuntos presentes
+// no diagnóstico; não se audita mais por lotes artificiais de Nielsen.
+const principal = p => p.id % 10 === 0 ? "NI" + p.h : p.hx[(p.id - 1) % p.hx.length];
+const cPrincipal = conta(P.map(p => principal(p).replace(/[0-9.]+$/, "")));
+meta(window.HEUR.every(s => cPrincipal[s.id] > 0), "V0 todos os 12 conjuntos aparecem como diagnóstico principal", JSON.stringify(cPrincipal));
 let piorH = "", piorV = 0;
-for (let h = 1; h <= 10; h++) {
-  const ps = P.filter(p => p.h === h); if (!ps.length) continue;
+for (const set of window.HEUR) {
+  const ps = P.filter(p => principal(p).startsWith(set.id)); if (!ps.length) continue;
   const m = conta(ps.map(p => fam(p.u))); const [k, v] = Object.entries(m).sort((a, b) => b[1] - a[1])[0];
-  if (v / ps.length > piorV) { piorV = v / ps.length; piorH = `NI${h}→${k} ${v}/${ps.length}`; }
+  if (v / ps.length > piorV) { piorV = v / ps.length; piorH = `${set.id}→${k} ${v}/${ps.length}`; }
 }
-meta(piorV <= 0.40, "V2 heurística não decide a família (≤ 40%)", "pior: " + piorH);
+meta(piorV <= 0.40, "V2 conjunto heurístico principal não decide a família (≤ 40%)", "pior: " + piorH);
 const cE = conta(P.map(p => p.e));
 meta((cE.macro || 0) >= N * 0.20 && (cE.micro || 0) <= N * 0.45, "V3 escalas: macro ≥ 20%, micro ≤ 45%", JSON.stringify(cE));
 meta(true, "V4 gravidade pela rubrica", JSON.stringify(conta(P.map(p => p.sev))));
